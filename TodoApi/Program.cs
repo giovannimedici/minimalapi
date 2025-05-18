@@ -43,7 +43,8 @@ static async Task<IResult> GetAllTodos(TodoDb db)
     return TypedResults.Ok(await db.Todos.Select(x => new TodoItemDTO(x)).ToArrayAsync());
 }
 
-static async Task<IResult> GetCompleteTodos(TodoDb db) {
+static async Task<IResult> GetCompleteTodos(TodoDb db)
+{
     return TypedResults.Ok(await db.Todos.Where(t => t.IsComplete).Select(x => new TodoItemDTO(x)).ToListAsync());
 }
 
@@ -57,6 +58,10 @@ static async Task<IResult> GetTodo(int id, TodoDb db)
 
 static async Task<IResult> CreateTodo(TodoItemDTO todoItemDTO, TodoDb db)
 {
+    if (string.IsNullOrEmpty(todoItemDTO.Name))
+    {
+        return TypedResults.BadRequest("Task name cannot be empty!");
+    }
     var todoItem = new Todo
     {
         IsComplete = todoItemDTO.IsComplete,
@@ -75,7 +80,9 @@ static async Task<IResult> UpdateTodo(int id, TodoItemDTO todoItemDTO, TodoDb db
 {
     var todo = await db.Todos.FindAsync(id);
 
-    if (todo is null) return TypedResults.NotFound();
+    if (todo is null) return TypedResults.NotFound("Task not found! Please verify Id!");
+
+    if (todo.IsComplete) return TypedResults.BadRequest("Cannot edit completed task!");
 
     todo.Name = todoItemDTO.Name;
     todo.IsComplete = todoItemDTO.IsComplete;
@@ -94,5 +101,5 @@ static async Task<IResult> DeleteTodo(int id, TodoDb db)
         return TypedResults.NoContent();
     }
 
-    return TypedResults.NotFound();
+    return TypedResults.NotFound("Task not found! Please verify Id!");
 }

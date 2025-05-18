@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 public class TodoItemDTO
 {
     public int Id { get; set; }
